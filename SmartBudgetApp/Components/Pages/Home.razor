@@ -1,7 +1,171 @@
 ﻿@page "/"
+@using System.Globalization
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject FacturasService facturasService
+@inject GastosServices gastosService
+@inject IngresosService ingresoService
+@inject VentasService ventasService
+@inject IJSRuntime JS
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Resumen Financiero</h2>
 
-Welcome to your new app.
+    
+    <div class="row">
+        
+        <div class="col-md-6">
+            <h4>Flujo de Efectivo</h4>
+            <canvas id="barChart"></canvas>
+        </div>
+
+        <div class="col-md-6">
+            <h4>Distribución de Gastos</h4>
+            <canvas id="pieChart"></canvas>
+        </div>
+    </div>
+
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h5>Facturas</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Categoría</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var factura in Facturas)
+                    {
+                        <tr>
+                            <td>@factura.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@factura.Categoria</td>
+                            <td>@factura.Total.ToString("C", CultureInfo.CurrentCulture)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <h5>Ingresos y Gastos</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ingresos</td>
+                        <td>@ingresos.Sum(i => i.Monto).ToString("C", CultureInfo.CurrentCulture)</td>
+                    </tr>
+                    <tr>
+                        <td>Gastos</td>
+                        <td>@gastos.Sum(g => g.Monto).ToString("C", CultureInfo.CurrentCulture)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h5>Ventas</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Departamento</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var venta in Ventas)
+                    {
+                        <tr>
+                            <td>@venta.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@venta.DepartamentoId</td>
+                            <td>@venta.Total.ToString("C", CultureInfo.CurrentCulture)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Facturas> Facturas = new List<Facturas>();
+    private List<Ventas> Ventas = new List<Ventas>();
+    private List<Ingresos> ingresos = new List<Ingresos>();
+    private List<Gastos> gastos = new List<Gastos>();
+    private Ingresos ingreso = new Ingresos();
+    private Gastos gasto = new Gastos();
+
+    private bool chartsRendered = false; 
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        Facturas = await facturasService.Listar(a => true);
+        Ventas = await ventasService.Listar(a => true);
+        ingresos = await ingresoService.Listar(a => true);
+        gastos = await gastosService.Listar(a => true);
+
+   
+
+        
+
+    }
+
+   
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !chartsRendered)
+        {
+            await RenderCharts(); 
+            chartsRendered = true;
+        }
+    }
+
+    private async Task RenderCharts()
+    {
+       
+        var barChartData = new
+        {
+            labels = Facturas.Select(f => f.Fecha.ToString("dd/MM/yyyy")).ToArray(),
+            datasets = new[] {
+                new {
+                    label = "Flujo de Efectivo",
+                    data = Facturas.Select(f => f.Total).ToArray(),
+                    backgroundColor = "rgba(75, 192, 192, 0.2)",
+                    borderColor = "rgba(75, 192, 192, 1)",
+                    borderWidth = 1
+                }
+            }
+        };
+
+        
+        var pieChartData = new
+        {
+            labels = gastos.Select(g => g.Descripcion).ToArray(),
+            datasets = new[] {
+                new {
+                    data = gastos.Select(g => g.Monto).ToArray(),
+                    backgroundColor = new[] { "rgba(255, 99, 132, 0.2)", "rgba(54, 162, 235, 0.2)" }
+                }
+            }
+        };
+
+        
+        await JS.InvokeVoidAsync("renderBarChart", "barChart", barChartData);
+        await JS.InvokeVoidAsync("renderPieChart", "pieChart", pieChartData);
+    }
+}
