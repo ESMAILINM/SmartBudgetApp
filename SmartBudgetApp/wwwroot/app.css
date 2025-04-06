@@ -58,3 +58,33 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+.sidebar {
+    background: linear-gradient(to bottom, #333, #111);
+}
+
+.nav-scrollable {
+    background-color: #000000; 
+    color: white; /* Color del texto si lo necesitas */
+}
+.fondo-personalizado {
+    background-image: url('/imagenes/Imagen2.jpg'); /* Asegúrate de que la ruta sea correcta */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100vw; /* 100% del ancho de la ventana */
+    height: 100vh; /* 100% del alto de la ventana */
+    margin: 0;
+    padding: 0;
+    position: fixed; /* Asegura que cubra toda la pantalla */
+    top: 0;
+    left: 0;
+
+}
+.nav-scrollable {
+    height: 100vh; /* Ocupa toda la pantalla */
+    display: flex;
+    flex-direction: column;
+}
+
+
