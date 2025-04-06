@@ -1,0 +1,156 @@
+﻿@page "/Ventas/Index"
+@inject VentasService ventasService
+@inject DepartamentoService departamentoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<div class="container card shadow-lg">
+    <div class="card-header text-center bg-primary text-white">
+        <h3><strong>Inventario de Ventas</strong></h3>
+    </div>
+
+    @* Filtro por rango de fecha *@
+    <div class="row g-3 align-items-center mb-4">
+        <div class="col-md-4">
+            <label for="fechaInicio" class="form-label fw-bold">Desde:</label>
+            <InputDate id="fechaInicio" class="form-control" @bind-Value="fechaInicio" />
+        </div>
+
+        <div class="col-md-4">
+            <label for="fechaFin" class="form-label fw-bold">Hasta:</label>
+            <InputDate id="fechaFin" class="form-control" @bind-Value="fechaFin" />
+        </div>
+        <div class="col-md-4 text-md-end">
+            <button @onclick="Buscar" class="btn btn-success">
+                <i class="bi bi-search"></i> Filtrar
+            </button>
+            <a href="/Ventas/Create" class="btn btn-outline-primary">
+                <i class="bi bi-plus-circle"></i> Nueva Venta
+            </a>
+        </div>
+        <div class="col-md-4">
+            <label for="departamentoFiltro" class="form-label fw-bold">Departamento:</label>
+            <InputSelect id="departamentoFiltro" class="form-control" @bind-Value="departamentoSeleccionado">
+                <option value="">Seleccione un Departamento</option>
+                @foreach (var dep in departamentos)
+                {
+                    <option value="@dep.DepartamentoId">@dep.Nombre</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+
+    @* Tabla de Ventas *@
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body">
+            <table class="table table-hover table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Departamento</th>
+                        <th>Eliminar</th>
+                        <th>Editar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var venta in ventas)
+                    {
+                        <tr>
+                            <td>@venta.Fecha.ToShortDateString()</td>
+                            <td>$@venta.Total.ToString("N2")</td>
+                            <td>@venta.Departamento.Nombre</td>
+                            <td>
+                                <button type="button" class="btn btn-danger" @onclick="() => MostrarModal(venta.VentaId)">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <a href="/Ventas/Edit/@venta.VentaId" class="btn btn-warning text-white">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer bg-light text-end">
+            <p class="mb-1 fw-bold">Total de Ventas: $@ventas.Sum(v => v.Total).ToString("N2")</p>
+        </div>
+    </div>
+</div>
+
+@if (mostrarModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmación</h5>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar esta venta?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="EliminarVenta">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show" @onclick="CerrarModal"></div>
+}
+
+@code {
+    public List<Ventas> ventas { get; set; } = new List<Ventas>();
+    public List<Departamento> departamentos { get; set; } = new List<Departamento>();
+    public Departamento departamentoSeleccionado { get; set; }
+    public DateTime fechaInicio { get; set; } = DateTime.Now.AddDays(-7);
+    public DateTime fechaFin { get; set; } = DateTime.Now;
+    public int ventaAEliminarId { get; set; }
+    public bool mostrarModal { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        departamentos = await departamentoService.ListarDepartamento(a => true);
+        await CargarVentas();
+    }
+
+    public async Task CargarVentas()
+    {
+        ventas = await ventasService.Listar(v => v.Fecha >= fechaInicio && v.Fecha <= fechaFin);
+    }
+
+    public async Task Buscar()
+    {
+        if (departamentoSeleccionado != null && departamentoSeleccionado.DepartamentoId != 0)
+        {
+            ventas = await ventasService.Listar(v => v.DepartamentoId == departamentoSeleccionado.DepartamentoId && v.Fecha >= fechaInicio && v.Fecha <= fechaFin);
+        }
+        else
+        {
+            await CargarVentas();
+        }
+    }
+
+    private void MostrarModal(int ventaId)
+    {
+        ventaAEliminarId = ventaId;
+        mostrarModal = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+        ventaAEliminarId = 0;
+    }
+
+    private async Task EliminarVenta()
+    {
+        await ventasService.Eliminar(ventaAEliminarId);
+        await CargarVentas(); 
+        CerrarModal();
+    }
+} 

@@ -1,0 +1,103 @@
+﻿@page "/Ventas/Create"
+@inject VentasService ventasService
+@inject DepartamentoService departamentoService
+@inject NavigationManager navigation
+@rendermode InteractiveServer
+
+<PageTitle>Registrar Inventario</PageTitle>
+
+<EditForm Model="@venta" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="container p-4 bg-light rounded shadow-lg">
+        <div class="card shadow">
+            <div class="card-header text-center bg-light text-dark">
+                <h3 class="card-title"><strong>Inventario de Venta</strong></h3>
+            </div>
+
+            <div class="card-body">
+                @* Departamento *@
+                <div class="mb-3">
+                    <label>Departamento</label>
+                    <InputSelect @bind-Value="venta.DepartamentoId" class="form-control">
+                        <option value="">Seleccione un departamento</option>
+                        @foreach (var depto in departamentos)
+                        {
+                            <option value="@depto.DepartamentoId">@depto.Nombre</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => venta.DepartamentoId)" />
+                </div>
+
+                @* Total *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Total</strong></label>
+                    <InputNumber id="Total" class="form-control" @bind-value="venta.Total" />
+                    <ValidationMessage For="@(() => venta.Total)" />
+                </div>
+
+                @* Fecha *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha</strong></label>
+                    <InputDate id="Fecha" class="form-control" @bind-value="venta.Fecha" />
+                    <ValidationMessage For="@(() => venta.Fecha)" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(MensajeError))
+                {
+                    <div class="alert alert-danger">@MensajeError</div>
+                }
+            </div>
+
+            <div class="card-footer text-center">
+                <button type="button" class="btn btn-outline-secondary" @onclick="Nuevo">
+                    <i class="bi bi-plus"></i> Nuevo
+                </button>
+                <button type="submit" class="btn btn-outline-success">
+                    <i class="bi bi-check-circle-fill"></i> Guardar
+                </button>
+                <a href="/Ventas/Index" class="btn btn-outline-danger">
+                    <i class="bi bi-arrow-bar-left"></i> Retroceder
+                </a>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public Ventas venta = new Ventas();
+    public List<Departamento> departamentos = new();
+    public string MensajeError = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        departamentos = await departamentoService.ListarDepartamento(a => true);
+        venta.Fecha = DateTime.Now;
+    }
+
+    private async Task Guardar()
+    {
+        if (venta.DepartamentoId == 0)
+        {
+            MensajeError = "Debe seleccionar un departamento.";
+            return;
+        }
+
+        var guardado = await ventasService.Guardar(venta);
+        if (guardado)
+        {
+            navigation.NavigateTo("/Ventas/Index", forceLoad: true);
+        }
+        else
+        {
+            MensajeError = "No se pudo guardar la venta.";
+        }
+    }
+
+    public void Nuevo()
+    {
+        venta = new Ventas { Fecha = DateTime.Now };
+        MensajeError = string.Empty;
+    }
+}
