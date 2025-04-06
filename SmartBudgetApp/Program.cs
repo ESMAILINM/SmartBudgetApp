@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartBudgetApp.Components;
 using SmartBudgetApp.Components.Account;
 using SmartBudgetApp.Data;
+using SmartBudgetApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,16 +25,26 @@ builder.Services.AddAuthentication(options =>
     .AddIdentityCookies();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//    options.UseSqlServer(connectionString)); //Otro DbContextque debe hereda de IdentityDbContext
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)//False porque no queremos confirmar correo
+    .AddRoles<IdentityRole>() //Agregar roles  de usuario.                                                                               
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+/*builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();*///No necesitamos el servicio de email
+
+builder.Services.AddScoped<IngresosService>();
+builder.Services.AddScoped<FacturasService>();  
+builder.Services.AddScoped<GastosServices>();
+builder.Services.AddScoped<CategoriasService>();
+builder.Services.AddScoped<VentasService>();
+builder.Services.AddScoped<DepartamentoService>();
 
 var app = builder.Build();
 
@@ -61,4 +72,4 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
-app.Run();
+await app.RunAsync();
