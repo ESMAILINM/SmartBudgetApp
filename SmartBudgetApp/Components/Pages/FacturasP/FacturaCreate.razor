@@ -1,0 +1,141 @@
+﻿@page "/Facturas/Create"
+@inject FacturasService facturasService
+@inject CategoriasService categoriasService
+@inject NavigationManager navigation
+@rendermode InteractiveServer
+
+
+<PageTitle>Crear Factura</PageTitle>
+
+<EditForm Model="@factura" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container p-4 bg-light rounded shadow-lg">
+        <div class="card shadow">
+            <div class="card-header text-center bg-primary text-white">
+                <h3 class="card-title"><strong>Registrar Factura</strong></h3>
+            </div>
+
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(MensajeError))
+                {
+                    <div class="alert alert-danger">@MensajeError</div>
+                }
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Categoría</strong></label>
+                    <InputSelect id="CategoriaId" class="form-select" @bind-Value="factura.CategoriaId">
+                        <option value="">Seleccione una Categoria</option>
+                        @foreach (var categoria in categorias)
+                        {
+                            <option value="@categoria.CategoriaId">@categoria.Nombre</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => factura.CategoriaId)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Estado</strong></label>
+                    <InputSelect id="Estado" class="form-select" @bind-Value="factura.Estado">
+                        <option value="">Seleccione un Estado</option>
+                        <option value="Pago">Pago</option>
+                        <option value="En Proceso">En Proceso</option>
+                        <option value="Pendiente">Pendiente</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => factura.Estado)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Total</strong></label>
+                    <InputNumber id="Total" class="form-control" @bind-Value="factura.Total" />
+                    <ValidationMessage For="@(() => factura.Total)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha</strong></label>
+                    <InputDate id="Fecha" class="form-control" @bind-Value="factura.Fecha" />
+                    <ValidationMessage For="@(() => factura.Fecha)" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                <button type="submit" onclick="Guardar" class="btn btn-outline-success ml-2"><span class="bi bi-check-circle-fill"></span>Guardar</button>
+                <a href="/Facturas/Index" class="btn btn-outline-danger"><i class="bi bi-arrow-bar-left"></i> Retroceder</a>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public Facturas factura = new Facturas();
+    public List<Categorias> categorias = new List<Categorias>();
+    public string MensajeError = string.Empty;
+    private bool Existe = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        categorias = await categoriasService.Listar(a => true);
+    }
+
+    public async Task<bool> Validar()
+    {
+        Existe = await facturasService.Existe(factura.FacturaId);
+        return !Existe;
+    }
+
+    public async Task Buscar()
+    {
+        Existe = false;
+        var facturaEncontrado = await facturasService.Buscar(factura.FacturaId);
+        if (facturaEncontrado != null)
+        {
+            factura = facturaEncontrado;
+        }
+        else
+        {
+            Nuevo();
+        }
+    }
+
+    public async Task Guardar()
+    {
+        if (!await Validar())
+        {
+            MensajeError = "La factura ya existe.";
+            return;
+        }
+
+        var guardado = await facturasService.Guardar(factura);
+        if (guardado)
+        {
+            navigation.NavigateTo("/Facturas/Index");
+        }
+        else
+        {
+            MensajeError = "Error al guardar la factura.";
+            StateHasChanged(); 
+        }
+    }
+
+
+    public void  Nuevo (){
+        factura = new Facturas();
+        Existe = false;
+    }
+
+
+    // public async Task Guardar()
+    // {      
+    //     var guardada = await facturasService.Guardar(factura);
+    //     if (guardada)
+    //     {
+    //         navigation.NavigateTo("/Facturas/Index");
+    //     }
+    //     else
+    //     {
+    //         MensajeError = "Error al guardar la factura";
+    //         StateHasChanged(); 
+    //     }
+    // }
+}

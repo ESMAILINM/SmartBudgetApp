@@ -1,0 +1,153 @@
+﻿@page "/Facturas/Index"
+@inject FacturasService facturasService
+@inject NavigationManager navigationManager
+@inject CategoriasService categoriasService
+@rendermode InteractiveServer
+
+<div class="container card shadow-lg">
+    <div class="card-header text-center bg-primary text-white">
+        <h3><strong>Lista de Facturas</strong></h3>
+    </div>
+
+    @* Filtro por rango de fecha y categoría *@
+    <div class="row g-3 align-items-center mb-4">
+        <div class="col-md-3">
+            <label for="fechaInicio" class="form-label fw-bold">Desde:</label>
+            <InputDate id="fechaInicio" class="form-control" @bind-Value="fechaInicio" />
+        </div>
+
+        <div class="col-md-3">
+            <label for="fechaFin" class="form-label fw-bold">Hasta:</label>
+            <InputDate id="fechaFin" class="form-control" @bind-Value="fechaFin" />
+        </div>
+
+        <div class="col-md-3">
+            <label for="categoria" class="form-label fw-bold">Categoría:</label>
+            <select id="categoria" class="form-select" @bind="categoriaSeleccionada">
+                <option value="0">Todas</option>
+                @foreach (var categoria in categorias)
+                {
+                    <option value="@categoria.CategoriaId">@categoria.Nombre</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-3 text-md-end">
+            <button @onclick="Buscar" class="btn btn-success">
+                <i class="bi bi-search"></i> Filtrar
+            </button>
+            <a href="/Facturas/Create" class="btn btn-outline-danger">
+                <i class="bi bi-plus-circle"></i> Nueva Factura
+            </a>
+        </div>
+    </div>
+
+    @* Tabla de Facturas *@
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body">
+            <table class="table table-hover table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Estado</th>
+                        <th>Total</th>
+                        <th>Fecha</th>
+                        <th>Eliminar</th>
+                        <th>Editar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var factura in facturas)
+                    {
+                        <tr>
+                            <td>@factura.Categoria.Nombre</td>
+                            <td>@factura.Estado</td>
+                            <td>$@factura.Total.ToString("N2")</td>
+                            <td>@factura.Fecha.ToShortDateString()</td>
+                            <td>
+                                <button type="button" class="btn btn-danger" @onclick="() => MostrarModal(factura)">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <a href="/Facturas/Edit/@factura.FacturaId" class="btn btn-warning text-white">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer bg-light text-end">
+            <p class="mb-1 fw-bold">Total de Facturas: $@facturas.Sum(f => f.Total).ToString("N2")</p>
+        </div>
+    </div>
+</div>
+
+@if (mostrarModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmación</h5>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar esta factura?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="EliminarFactura">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show" @onclick="CerrarModal"></div>
+}
+
+@code {
+    public List<Facturas> facturas { get; set; } = new();
+    public List<Categorias> categorias { get; set; } = new();
+    public DateTime fechaInicio { get; set; } = DateTime.Now.AddDays(-7);
+    public DateTime fechaFin { get; set; } = DateTime.Now;
+    public int categoriaSeleccionada { get; set; } = 0;
+    public Facturas factura { get; set; }
+    public bool mostrarModal { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categorias = await categoriasService.Listar(a => true);
+        await Buscar();
+    }
+
+    public async Task Buscar()
+    {
+        facturas = await facturasService.Listar(f =>
+            f.Fecha >= fechaInicio && f.Fecha <= fechaFin &&
+            (categoriaSeleccionada == 0 || f.CategoriaId == categoriaSeleccionada));
+    }
+
+    private void MostrarModal(Facturas facturaSeleccionada)
+    {
+        factura = facturaSeleccionada;
+        mostrarModal = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+        factura = null;
+    }
+
+    private async Task EliminarFactura()
+    {
+        if (factura != null)
+        {
+            await facturasService.Eliminar(factura.FacturaId);
+            await Buscar(); // Recargar las facturas después de eliminar
+            CerrarModal();
+        }
+    }
+}
