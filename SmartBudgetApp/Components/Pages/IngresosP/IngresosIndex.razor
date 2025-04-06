@@ -1,0 +1,130 @@
+﻿@page "/Ingresos/Index"
+@inject IngresosService ingresosService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<div class="container card shadow-lg">
+    <div class="card-header text-center">
+        <h3><strong>Ingresos</strong></h3>
+    </div>
+
+    @* Filtro por rango de fechas *@
+    <div class="row g-3 align-items-center mb-4">
+        <div class="col-md-4">
+            <label for="fechaInicio" class="form-label fw-bold">Desde:</label>
+            <InputDate id="fechaInicio" class="form-control" @bind-Value="fechaInicio"></InputDate>
+        </div>
+
+        <div class="col-md-4">
+            <label for="fechaFin" class="form-label fw-bold">Hasta:</label>
+            <InputDate id="fechaFin" class="form-control" @bind-Value="fechaFin"></InputDate>
+        </div>
+
+        <div class="col-md-4 text-md-end">
+            <button @onclick="Buscar" class="btn btn-success">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+            <a href="/Ingresos/Create" class="btn btn-outline-success">
+                <i class="bi bi-plus-circle"></i>
+            </a>
+        </div>
+    </div>
+
+    @* Tabla de Ingresos *@
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body">
+            <table class="table table-hover table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>Descripción</th>
+                        <th>Monto</th>
+                        <th>Fecha</th>
+                        <th>Eliminar</th>
+                        <th>Editar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ingreso in ingresos)
+                    {
+                        <tr>
+                            <td>@ingreso.Descripcion</td>
+                            <td>$@ingreso.Monto.ToString("N2")</td>
+                            <td>@ingreso.Fecha.ToShortDateString()</td>
+                            <td>
+                                <button type="button" class="btn btn-outline-danger" @onclick="() => MostrarModal(ingreso.Descripcion)">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <a href="/Ingresos/Edit/@ingreso.Descripcion" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="card-footer bg-light text-end">
+                <p class="mb-1 fw-bold">Total $@((ingresos?.Sum(i => i.Monto) ?? 0).ToString("N2"))</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (mostrarModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Eliminar Ingreso</h5>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar este ingreso?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="EliminarIngreso">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show" @onclick="CerrarModal"></div>
+}
+
+@code {
+    public List<Ingresos> ingresos { get; set; } = new List<Ingresos>();
+    public DateTime fechaInicio { get; set; } = DateTime.Now.AddMonths(-1);
+    public DateTime fechaFin { get; set; } = DateTime.Now;
+    public string ingresoAEliminarDescripcion { get; set; }
+    public bool mostrarModal { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ingresos = await ingresosService.Listar(i => true);
+    }
+
+    public async Task Buscar()
+    {
+        ingresos = await ingresosService.Listar(i => i.Fecha >= fechaInicio && i.Fecha <= fechaFin);
+    }
+
+    private void MostrarModal(string descripcionIngreso)
+    {
+        ingresoAEliminarDescripcion = descripcionIngreso;
+        mostrarModal = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+        ingresoAEliminarDescripcion = null;
+    }
+
+    private async Task EliminarIngreso()
+    {
+        await ingresosService.EliminarIngreso(ingresoAEliminarDescripcion);
+        await Buscar(); 
+        CerrarModal();
+    }
+}

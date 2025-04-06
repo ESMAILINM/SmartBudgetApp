@@ -1,0 +1,88 @@
+﻿@page "/Ingresos/Create"
+@inject IngresosService ingresosService
+@inject NavigationManager navigation
+@rendermode InteractiveServer
+
+<PageTitle>Registrar Ingreso</PageTitle>
+
+<EditForm Model="ingreso" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container p-4 bg-light rounded shadow-lg">
+        <div class="card shadow">
+            <div class="card-header text-center bg-light text-dark">
+                <h3 class="card-title"><strong>Registro de Ingreso</strong></h3>
+            </div>
+
+            <div class="card-body">
+                @* Descripción *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Descripción</strong></label>
+                    <InputText id="Descripcion" class="form-control" @bind-value="ingreso.Descripcion" />
+                    <ValidationMessage For="@(() => ingreso.Descripcion)" />
+                </div>
+
+                @* Monto *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Monto</strong></label>
+                    <InputNumber id="Monto" class="form-control" @bind-value="ingreso.Monto" />
+                    <ValidationMessage For="@(() => ingreso.Monto)" />
+                </div>
+
+                @* Fecha *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha</strong></label>
+                    <InputDate id="Fecha" class="form-control" @bind-value="ingreso.Fecha" />
+                    <ValidationMessage For="@(() => ingreso.Fecha)" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                <button type="button" class="btn btn-outline-secondary" @onclick="Nuevo">
+                    <i class="bi bi-plus"></i> Nuevo
+                </button>
+                <button type="submit" class="btn btn-outline-success">
+                    <i class="bi bi-check-circle-fill"></i> Guardar
+                </button>
+                <a href="Ingresos/Index" class="btn btn-outline-danger" @onclick="Volver">
+                    <i class="bi bi-arrow-bar-left"></i> Retroceder
+                </a>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public Ingresos ingreso = new Ingresos();
+    public List<Ingresos> ingresos = new List<Ingresos>();
+    public string MensajeError = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ingreso.Fecha = DateTime.Now; // Establecer fecha actual por defecto
+        ingresos = await ingresosService.Listar(a => true);
+    }
+
+    public async Task Guardar()
+    {
+        try
+        {
+            await ingresosService.Guardar(ingreso);
+            ingreso = new Ingresos { Fecha = DateTime.Now }; // Resetear el formulario
+            Volver();
+        }
+        catch (Exception ex)
+        {
+            MensajeError = $"Error al guardar el ingreso: {ex.Message}";
+        }
+    }
+
+    public void Volver()
+    {
+        navigation.NavigateTo("Ingresos/Index");
+    }
+
+    public void Nuevo()
+    {
+        ingreso = new Ingresos { Fecha = DateTime.Now }; // Limpiar el formulario con la fecha actual
+    }
+}
