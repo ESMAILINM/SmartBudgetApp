@@ -2,23 +2,56 @@
 
 @inject NavigationManager NavigationManager
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">SmartBudgetApp</a>
-    </div>
+<div class="top-row ps-3 navbar navbar-dark bg-black d-flex justify-content-center" style="height: 50px;">
+    <a class="navbar-brand mt-3 text-white" href="" style="font-family: 'Handlee', cursive; font-size: 35px;">
+        SmartBudget
+    </a>
 </div>
+
 
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+   
+    <nav class="nav flex-column ">
+        <div class="nav-item px-3 mt-5 ">
+            <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
+      
 
         <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/Ingresos/Index" Match="NavLinkMatch.All">
+                <span class="bi bi-cash-coin  fs-5 d-flex align-items-center" aria-hidden="true"></span> Ingresos
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Gastos/Index" Match="NavLinkMatch.All">
+                <span class="bi bi-credit-card  fs-5 d-flex align-items-center" aria-hidden="true"></span> Gastos
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Facturas/Index" Match="NavLinkMatch.All">
+                <span class="bi bi-receipt-cutoff  fs-5 d-flex align-items-center" aria-hidden="true"></span> Facturas
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Ventas/Index" Match="NavLinkMatch.All">
+                <span class="bi bi-bag-check-fill  fs-5 d-flex align-items-center" aria-hidden="true"></span> Ventas
+            </NavLink>
+        </div>
+        <AuthorizeView Roles="Admin">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="Categorias/Create" Match="NavLinkMatch.All">
+                    <span class="bi bi-bag-check-fill  fs-5 d-flex align-items-center" aria-hidden="true"></span> Categorias
+                </NavLink>
+            </div>
+        </AuthorizeView>
+        
+      
+
+       @*  <div class="nav-item px-3">
             <NavLink class="nav-link" href="counter">
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
             </NavLink>
@@ -28,19 +61,22 @@
             <NavLink class="nav-link" href="weather">
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
             </NavLink>
-        </div>
+        </div> *@
 
-        <div class="nav-item px-3">
+        @* <div class="nav-item px-3">
             <NavLink class="nav-link" href="auth">
                 <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
             </NavLink>
-        </div>
-
+        </div> *@
+       
+       
         <AuthorizeView>
             <Authorized>
+                <hr class="my-2" style="height: 35vh;" />
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Mi Perfil
+                        @* @context.User.Identity?.Name *@
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
