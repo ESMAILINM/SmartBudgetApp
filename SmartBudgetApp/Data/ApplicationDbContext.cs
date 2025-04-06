@@ -12,8 +12,6 @@ namespace SmartBudgetApp.Data
         public DbSet<Ingresos> Ingresos { get; set; }
         public DbSet<Gastos> Gastos { get; set; }
         public DbSet<Facturas> Facturas { get; set; }
-        public DbSet<Producto> Producto { get; set; }
-        public DbSet<Tipo> Tipos { get; set; }
         public DbSet<Departamento> Departamento { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder modelbuilder)
