@@ -64,11 +64,11 @@ h1:focus {
 }
 
 .nav-scrollable {
-    background-color: #000000; 
+    background-color: #142d47; 
     color: white; /* Color del texto si lo necesitas */
 }
 .fondo-personalizado {
-    background-image: url('/imagenes/Imagen2.jpg'); /* Asegúrate de que la ruta sea correcta */
+    background-image: url('/imagenes/Imagen2.jpg'); 
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -86,5 +86,168 @@ h1:focus {
     display: flex;
     flex-direction: column;
 }
+.card canvas {
+    width: 100%;
+    height: 300px;
+}
+/* app.css */
+
+/* Estilo de fondo y márgenes para la página */
+body {
+    font-family: 'Handlee', sans-serif;
+    background-color: #f4f7fa;
+    margin: 0;
+    padding: 0;
+}
+
+/* Contenedor principal */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 20px;
+}
+
+/* Títulos de la página */
+h1 {
+    font-size: 2.5rem;
+    color: #2d3e50;
+    font-weight: bold;
+}
+
+/* Tarjetas */
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+.card-text {
+    font-size: 1.5rem;
+}
+
+/* Estilo de las tarjetas de resumen */
+.card-text.text-success {
+    color: #28a745;
+}
+
+.card-text.text-danger {
+    color: #dc3545;
+}
+
+.card-text.text-primary {
+    color: #007bff;
+}
+
+.card-header {
+    font-size: 1.25rem;
+    background-color: #f8f9fa;
+    padding: 15px;
+    text-align: center;
+}
+
+/* Estilo para las gráficas */
+canvas {
+    border-radius: 8px;
+}
+
+/* Estilo de las tablas */
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+}
+
+.table th,
+.table td {
+    padding: 0.75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
+
+.table-light {
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Estilo del selector de mes */
+#mesSelect {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+}
+
+.form-label {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Estilo de los gráficos de la página */
+h5.text-center {
+    font-size: 1.25rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.card.shadow-sm {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.row.mb-4 {
+    margin-bottom: 30px;
+}
+
+/* Estilo responsivo para móviles */
+@media (max-width: 768px) {
+    .col-md-4 {
+        margin-bottom: 20px;
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+
+    .table th, .table td {
+        font-size: 0.875rem;
+    }
+}
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 20px;
+}
+
+.dashboard-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.dashboard-title {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #368bc1;
+}
+
 
 
