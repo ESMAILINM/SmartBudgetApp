@@ -1,5 +1,65 @@
-﻿<h3>IngresosEdit</h3>
+﻿@page "/Ingresos/Edit/{Id:int}"
+@inject IngresosService ingresosService
+@inject NavigationManager navigationManager
+
+<div class="container card shadow-lg">
+    <div class="card-header text-center bg-primary text-white">
+        <h3><strong>Editar Ingreso</strong></h3>
+    </div>
+
+    <EditForm Model="ingreso" OnValidSubmit="GuardarIngreso">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="card-body">
+            <div class="form-group mb-3">
+                <label for="Descripcion" class="form-label fw-bold">Descripción</label>
+                <InputText id="Descripcion" class="form-control" @bind-Value="ingreso.Descripcion" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="Monto" class="form-label fw-bold">Monto</label>
+                <InputNumber id="Monto" class="form-control" @bind-Value="ingreso.Monto" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="Fecha" class="form-label fw-bold">Fecha</label>
+                <InputDate id="Fecha" class="form-control" @bind-Value="ingreso.Fecha" />
+            </div>
+        </div>
+
+        <div class="card-footer bg-light text-end">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-save"></i> Guardar
+            </button>
+            <button type="button" class="btn btn-secondary" @onclick="CancelarIngreso">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </button>
+        </div>
+    </EditForm>
+</div>
 
 @code {
+    [Parameter] public int Id { get; set; } // Parámetro de la ruta que recibirá el Id
+    public Ingresos ingreso { get; set; } = new Ingresos();
 
+    protected override async Task OnInitializedAsync()
+    {
+        ingreso = await ingresosService.Buscar(Id); // Obtener el ingreso por su Id
+        if (ingreso == null)
+        {
+            navigationManager.NavigateTo("/Ingresos/Index"); // Redirigir si no se encuentra el ingreso
+        }
+    }
+
+    private async Task GuardarIngreso()
+    {
+        await ingresosService.Modificar(ingreso); // Guardar los cambios
+        navigationManager.NavigateTo("/Ingresos/Index"); // Redirigir a la lista de ingresos
+    }
+
+    private void CancelarIngreso()
+    {
+        navigationManager.NavigateTo("/Ingresos/Index"); // Redirigir sin guardar
+    }
 }

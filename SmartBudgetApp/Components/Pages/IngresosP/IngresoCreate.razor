@@ -58,7 +58,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ingreso.Fecha = DateTime.Now; // Establecer fecha actual por defecto
+        ingreso.Fecha = DateTime.Now; 
         ingresos = await ingresosService.Listar(a => true);
     }
 
@@ -67,7 +67,7 @@
         try
         {
             await ingresosService.Guardar(ingreso);
-            ingreso = new Ingresos { Fecha = DateTime.Now }; // Resetear el formulario
+            ingreso = new Ingresos { Fecha = DateTime.Now }; 
             Volver();
         }
         catch (Exception ex)
@@ -83,6 +83,6 @@
 
     public void Nuevo()
     {
-        ingreso = new Ingresos { Fecha = DateTime.Now }; // Limpiar el formulario con la fecha actual
+        ingreso = new Ingresos { Fecha = DateTime.Now }; 
     }
 }
