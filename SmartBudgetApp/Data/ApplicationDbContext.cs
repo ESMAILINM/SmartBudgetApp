@@ -22,13 +22,11 @@ namespace SmartBudgetApp.Data
         {
             base.OnModelCreating(modelbuilder);
 
-            // Insertar datos por defecto para los Departamentos
             modelbuilder.Entity<Departamento>().HasData(
                 new Departamento { DepartamentoId = 1, Nombre = "Reposteria" },
                 new Departamento { DepartamentoId = 2, Nombre = "Restaurante" }
             );
 
-            // Insertar datos por defecto para las Categorias
             modelbuilder.Entity<Categorias>().HasData(
                 new Categorias { CategoriaId = 1, Nombre = "Luz" },
                 new Categorias { CategoriaId = 2, Nombre = "Agua" },
