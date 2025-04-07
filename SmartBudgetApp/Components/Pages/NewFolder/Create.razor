@@ -1,0 +1,120 @@
+﻿@page "/Usuarios/Administrar"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<ApplicationUser> userManager
+@inject NavigationManager navigation
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Administrar Usuarios</h3>
+
+@if (users == null)
+{
+    <p>Cargando usuarios...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Email</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                    <td>@(user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.Now ? "Bloqueado" : "Activo")</td>
+                    <td>
+                        @if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.Now)
+                        {
+                            <button class="btn btn-success" @onclick="() => UnlockUser(user.Id)">Desbloquear</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-danger" @onclick="() => LockUser(user.Id)">Bloquear</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (totalPages > 1)
+    {
+        <div>
+            <button class="btn btn-primary" @onclick="() => ChangePage(currentPage - 1)" disabled="@(currentPage == 1)">Anterior</button>
+            <span>Página @currentPage de @totalPages</span>
+            <button class="btn btn-primary" @onclick="() => ChangePage(currentPage + 1)" disabled="@(currentPage == totalPages)">Siguiente</button>
+        </div>
+    }
+}
+
+@code {
+    private IList<ApplicationUser> users;
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalPages;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        try
+        {
+            var query = userManager.Users.AsQueryable();
+            var totalUsers = await query.CountAsync();
+            totalPages = (int)Math.Ceiling(totalUsers / (double)pageSize);
+
+            users = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            
+            Console.WriteLine($"Error al cargar usuarios: {ex.Message}");
+        }
+    }
+
+    private async Task LockUser(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user != null)
+        {
+            await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            await userManager.UpdateAsync(user);
+            await LoadUsers();
+        }
+    }
+
+    private async Task UnlockUser(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user != null)
+        {
+            await userManager.SetLockoutEndDateAsync(user, null);
+            await userManager.UpdateAsync(user);
+            await LoadUsers();
+        }
+    }
+
+    private async Task ChangePage(int page)
+    {
+        if (page > 0 && page <= totalPages)
+        {
+            currentPage = page;
+            await LoadUsers();
+        }
+    }
+}
