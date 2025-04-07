@@ -9,7 +9,7 @@
     <DataAnnotationsValidator />
     <div class="container p-4 bg-light rounded shadow-lg">
         <div class="card shadow">
-            <div class="card-header text-center bg-danger text-white">
+            <div class="card-header text-center bg-light text-dark">
                 <h3 class="card-title"><strong>Registro de Gasto</strong></h3>
             </div>
 
@@ -34,16 +34,18 @@
                     <InputDate id="Fecha" class="form-control" @bind-value="gasto.Fecha" />
                     <ValidationMessage For="@(() => gasto.Fecha)" />
                 </div>
+
+                @* La categoría ya no es necesaria. *@
             </div>
 
             <div class="card-footer text-center">
-                <button type="button" class="btn btn-outline-primary" @onclick="Nuevo">
+                <button type="button" class="btn btn-outline-secondary" @onclick="Nuevo">
                     <i class="bi bi-plus"></i> Nuevo
                 </button>
                 <button type="submit" class="btn btn-outline-success">
                     <i class="bi bi-check-circle-fill"></i> Guardar
                 </button>
-                <a href="Gastos/Index" class="btn btn-outline-danger" @onclick="Volver">
+                <a href="/Gastos/Index" class="btn btn-outline-danger" @onclick="Volver">
                     <i class="bi bi-arrow-bar-left"></i> Retroceder
                 </a>
             </div>
@@ -53,19 +55,21 @@
 
 @code {
     public Gastos gasto = new Gastos();
+    public List<Gastos> gastos = new List<Gastos>();
     public string MensajeError = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        gasto.Fecha = DateTime.Now; // Establecer fecha actual por defecto
+        gasto.Fecha = DateTime.Now;  // Asignar fecha predeterminada
     }
 
     public async Task Guardar()
     {
         try
         {
+            // Guardar el gasto sin la categoría
             await gastosService.Guardar(gasto);
-            gasto = new Gastos { Fecha = DateTime.Now }; // Resetear el formulario
+            gasto = new Gastos { Fecha = DateTime.Now };  // Limpiar el formulario
             Volver();
         }
         catch (Exception ex)
@@ -76,11 +80,11 @@
 
     public void Volver()
     {
-        navigation.NavigateTo("Gastos/Index");
+        navigation.NavigateTo("/Gastos/Index");
     }
 
     public void Nuevo()
     {
-        gasto = new Gastos { Fecha = DateTime.Now }; // Limpiar el formulario con la fecha actual
+        gasto = new Gastos { Fecha = DateTime.Now };  // Limpiar el formulario para un nuevo gasto
     }
 }

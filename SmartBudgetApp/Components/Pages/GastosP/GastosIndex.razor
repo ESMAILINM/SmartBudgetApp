@@ -1,15 +1,15 @@
 ﻿@page "/Gastos/Index"
 @inject GastosServices gastosService
-@inject CategoriasService categoriasSeervice
 @inject NavigationManager navigationManager
+@inject CategoriasService categoriasService
 @rendermode InteractiveServer
 
 <div class="container card shadow-lg">
-    <div class="card-header text-center bg-danger text-white">
+    <div class="card-header text-center ">
         <h3><strong>Lista de Gastos</strong></h3>
     </div>
 
-    @* Filtro por rango de fecha *@
+
     <div class="row g-3 align-items-center mb-4">
         <div class="col-md-4">
             <label for="fechaInicio" class="form-label fw-bold">Desde:</label>
@@ -21,17 +21,30 @@
             <InputDate id="fechaFin" class="form-control" @bind-Value="fechaFin" />
         </div>
 
+       
+
         <div class="col-md-4 text-md-end">
             <button @onclick="Buscar" class="btn btn-success">
                 <i class="bi bi-search"></i> Filtrar
             </button>
-            <a href="/Gastos/Create" class="btn btn-outline-danger">
-                <i class="bi bi-plus-circle"></i> Nuevo Gasto
+            <a href="/Gastos/Create" class="btn btn-outline-success">
+                <i class="bi bi-plus-circle"></i>
             </a>
+        </div>
+       
+        <div class="col-md-4">
+            <label for="descripcion" class="form-label fw-bold">Descripción:</label>
+            <InputSelect id="descripcion" class="form-control" @bind-Value="descripcionFiltro">
+                <option value="">Selecciona una descripción</option>
+                @foreach (var desc in descripcionesFiltradas)
+                {
+                    <option value="@desc">@desc</option>
+                }
+            </InputSelect>
         </div>
     </div>
 
-    @* Tabla de Gastos *@
+   
     <div class="card border-0 shadow-sm mt-4">
         <div class="card-body">
             <table class="table table-hover table-bordered text-center">
@@ -45,22 +58,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    
                     @foreach (var gasto in gastos)
                     {
                         <tr>
-                         @*    <td>@gasto.Categoria?.Nombre</td> *@
                             <td>@gasto.Descripcion</td>
                             <td>$@gasto.Monto.ToString("N2")</td>
                             <td>@gasto.Fecha.ToShortDateString()</td>
-                          
                             <td>
-                                <button type="button" class="btn btn-danger" @onclick="() => MostrarModal(gasto)">
+                                <button type="button" class="btn btn-outline-danger" @onclick="() => MostrarModal(gasto)">
                                     <i class="bi bi-trash3"></i>
                                 </button>
                             </td>
                             <td>
-                                <a href="/Gastos/Edit/@gasto.GastoId" class="btn btn-warning text-white">
+                                <a href="/Gastos/Edit/@gasto.GastoId" class="btn btn-outline-primary">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
                             </td>
@@ -68,10 +78,10 @@
                     }
                 </tbody>
             </table>
-        </div>
 
-        <div class="card-footer bg-light text-end">
-            <p class="mb-1 fw-bold">Total de Gastos: $@gastos.Sum(g => g.Monto).ToString("N2")</p>
+            <div class="card-footer bg-light text-end">
+                <p class="mb-1 fw-bold">Total de Gastos: $@gastos.Sum(g => g.Monto).ToString("N2")</p>
+            </div>
         </div>
     </div>
 </div>
@@ -79,10 +89,10 @@
 @if (mostrarModal)
 {
     <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Eliminar Gasto</h5>
+                    <h5 class="modal-title">Confirmación</h5>
                 </div>
                 <div class="modal-body">
                     ¿Estás seguro de que deseas eliminar este gasto?
@@ -98,27 +108,36 @@
 }
 
 @code {
-    public List<Gastos> gastos { get; set; } = new List<Gastos>();
-    public List<Categorias> categorias = new List<Categorias>();
-    public DateTime fechaInicio { get; set; } = DateTime.Now.AddDays(-7);
+    public List<Gastos> gastos { get; set; } = new();
+    public List<Categorias> categorias { get; set; } = new();
+    public List<string> descripcionesFiltradas { get; set; } = new();
+    public DateTime fechaInicio { get; set; } = DateTime.Now.AddMonths(-1);
     public DateTime fechaFin { get; set; } = DateTime.Now;
+    public string descripcionFiltro { get; set; } = string.Empty;
+    public bool mostrarModal { get; set; }
     public Gastos gasto { get; set; }
-    public bool mostrarModal { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarGastos();
-       categorias= await categoriasSeervice.Listar(a => true);
-    }
-
-    public async Task CargarGastos()
-    {
-        gastos = await gastosService.Listar(g => g.Fecha >= fechaInicio && g.Fecha <= fechaFin);
+        categorias = await categoriasService.Listar(c => true);
+        await Buscar();
     }
 
     public async Task Buscar()
     {
-        gastos = await gastosService.Listar(g => g.Fecha >= fechaInicio && g.Fecha <= fechaFin);
+      
+        gastos = await gastosService.Listar(g =>
+            g.Fecha >= fechaInicio && g.Fecha <= fechaFin &&
+            (string.IsNullOrEmpty(descripcionFiltro) || g.Descripcion.Contains(descripcionFiltro, StringComparison.OrdinalIgnoreCase)));
+
+        
+        descripcionesFiltradas = gastos.Select(g => g.Descripcion).Distinct().ToList();
+    }
+
+    private void FiltrarDescripciones()
+    {
+        
+        Buscar();
     }
 
     private void MostrarModal(Gastos gastoSeleccionado)
@@ -138,7 +157,7 @@
         if (gasto != null)
         {
             await gastosService.Eliminar(gasto.GastoId);
-            await CargarGastos(); 
+            await Buscar();
             CerrarModal();
         }
     }
