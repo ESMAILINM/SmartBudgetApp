@@ -5,23 +5,31 @@
 @rendermode InteractiveServer
 
 <div class="container card shadow-lg">
-    <div class="card-header text-center bg-primary text-white">
+    <div class="card-header text-center ">
         <h3><strong>Lista de Facturas</strong></h3>
     </div>
 
     @* Filtro por rango de fecha y categoría *@
     <div class="row g-3 align-items-center mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <label for="fechaInicio" class="form-label fw-bold">Desde:</label>
-            <InputDate id="fechaInicio" class="form-control" @bind-Value="fechaInicio" />
+            <InputDate id="fechaInicio" class="form-control" @bind-Value="fechaInicio"></InputDate>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <label for="fechaFin" class="form-label fw-bold">Hasta:</label>
-            <InputDate id="fechaFin" class="form-control" @bind-Value="fechaFin" />
+            <InputDate id="fechaFin" class="form-control" @bind-Value="fechaFin"></InputDate>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4 text-md-end">
+            <button @onclick="Buscar" class="btn btn-success">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+            <a href="/Facturas/Create" class="btn btn-outline-success">
+                <i class="bi bi-plus-circle"></i> 
+            </a>
+        </div>
+        <div class="col-md-4">
             <label for="categoria" class="form-label fw-bold">Categoría:</label>
             <select id="categoria" class="form-select" @bind="categoriaSeleccionada">
                 <option value="0">Todas</option>
@@ -30,15 +38,6 @@
                     <option value="@categoria.CategoriaId">@categoria.Nombre</option>
                 }
             </select>
-        </div>
-
-        <div class="col-md-3 text-md-end">
-            <button @onclick="Buscar" class="btn btn-success">
-                <i class="bi bi-search"></i> Filtrar
-            </button>
-            <a href="/Facturas/Create" class="btn btn-outline-danger">
-                <i class="bi bi-plus-circle"></i> Nueva Factura
-            </a>
         </div>
     </div>
 
@@ -65,12 +64,12 @@
                             <td>$@factura.Total.ToString("N2")</td>
                             <td>@factura.Fecha.ToShortDateString()</td>
                             <td>
-                                <button type="button" class="btn btn-danger" @onclick="() => MostrarModal(factura)">
+                                <button type="button" class="btn btn-outline-danger" @onclick="() => MostrarModal(factura)">
                                     <i class="bi bi-trash3"></i>
                                 </button>
                             </td>
                             <td>
-                                <a href="/Facturas/Edit/@factura.FacturaId" class="btn btn-warning text-white">
+                                <a href="/Facturas/Edit/@factura.FacturaId" class="btn btn-outline-primary">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
                             </td>
@@ -78,10 +77,10 @@
                     }
                 </tbody>
             </table>
-        </div>
 
-        <div class="card-footer bg-light text-end">
-            <p class="mb-1 fw-bold">Total de Facturas: $@facturas.Sum(f => f.Total).ToString("N2")</p>
+            <div class="card-footer bg-light text-end">
+                <p class="mb-1 fw-bold">Total de Facturas: $@facturas.Sum(f => f.Total).ToString("N2")</p>
+            </div>
         </div>
     </div>
 </div>
@@ -89,7 +88,7 @@
 @if (mostrarModal)
 {
     <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Confirmación</h5>

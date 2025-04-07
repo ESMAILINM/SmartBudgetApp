@@ -1,5 +1,92 @@
-﻿<h3>FacturaEdit</h3>
+﻿@page "/Facturas/Edit/{FacturaId:int}"
+@inject FacturasService facturasService
+@inject CategoriasService categoriasService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<div class="container card shadow-lg">
+    <div class="card-header text-center bg-primary text-white">
+        <h3><strong>Editar Factura</strong></h3>
+    </div>
+
+    <div class="card-body">
+        @if (factura != null)
+        {
+            <EditForm Model="factura" OnValidSubmit="GuardarFactura">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label for="categoria" class="form-label fw-bold">Categoría:</label>
+                    <select id="categoria" class="form-select" @bind="factura.CategoriaId">
+                        @foreach (var categoria in categorias)
+                        {
+                            <option value="@categoria.CategoriaId">@categoria.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="estado" class="form-label fw-bold">Estado:</label>
+                    <select id="estado" class="form-select" @bind="factura.Estado">
+                        <option value="@factura.Estado">@factura.Estado</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Pagada">Pagada</option>
+                        <option value="Cancelada">Cancelada</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="total" class="form-label fw-bold">Total:</label>
+                    <InputNumber id="total" class="form-control" @bind-Value="factura.Total" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="fecha" class="form-label fw-bold">Fecha:</label>
+                    <InputDate id="fecha" class="form-control" @bind-Value="factura.Fecha" />
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelarEdicion">
+                        <i class="bi bi-arrow-left-circle"></i> Volver
+                    </button>
+                </div>
+            </EditForm>
+        }
+        else
+        {
+            <p>Factura no encontrada.</p>
+        }
+    </div>
+</div>
 
 @code {
+    [Parameter] public int FacturaId { get; set; }
+    public Facturas factura { get; set; }
+    public List<Categorias> categorias { get; set; } = new();
 
+    protected override async Task OnInitializedAsync()
+    {
+        categorias = await categoriasService.Listar(a => true);
+        factura = await facturasService.Buscar(FacturaId);
+
+        if (factura == null)
+        {
+            navigationManager.NavigateTo("/Facturas/Index");
+        }
+    }
+
+    private async Task GuardarFactura()
+    {
+        await facturasService.Modificar(factura);
+        navigationManager.NavigateTo("/Facturas/Index");
+    }
+
+    private void CancelarEdicion()
+    {
+        navigationManager.NavigateTo("/Facturas/Index");
+    }
 }
