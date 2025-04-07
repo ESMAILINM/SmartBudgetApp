@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartBudgetApp.Data;
 using SmartBudgetApp.Models;
@@ -20,12 +17,12 @@ namespace SmartBudgetApp.Services
 
         public async Task<bool> Guardar(Gastos gastos)
         {
-            // Si es un registro nuevo, se verifica además por descripción y fecha.
+           
             if (gastos.GastoId <= 0)
             {
                 if (await ExistePorDescripcionYFecha(gastos.Descripcion, gastos.Fecha))
                 {
-                    // Si ya existe un gasto con la misma descripción y fecha, se opta por actualizar.
+                   
                     return await Modificar(gastos);
                 }
                 else
@@ -35,7 +32,7 @@ namespace SmartBudgetApp.Services
             }
             else
             {
-                // Si el gasto ya tiene un ID, se trata de una actualización.
+                
                 return await Modificar(gastos);
             }
         }
@@ -49,7 +46,7 @@ namespace SmartBudgetApp.Services
         public async Task<bool> ExistePorDescripcionYFecha(string descripcion, DateTime fecha)
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
-            // Se compara la fecha sin la parte de la hora usando .Date
+          
             return await contexto.Gastos.AnyAsync(x => x.Descripcion == descripcion && x.Fecha.Date == fecha.Date);
         }
 
