@@ -35,7 +35,7 @@
                     <ValidationMessage For="@(() => gasto.Fecha)" />
                 </div>
 
-                @* La categoría ya no es necesaria. *@
+                
             </div>
 
             <div class="card-footer text-center">
@@ -60,16 +60,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        gasto.Fecha = DateTime.Now;  // Asignar fecha predeterminada
+        gasto.Fecha = DateTime.Now;  
     }
 
     public async Task Guardar()
     {
         try
         {
-            // Guardar el gasto sin la categoría
+           
             await gastosService.Guardar(gasto);
-            gasto = new Gastos { Fecha = DateTime.Now };  // Limpiar el formulario
+            gasto = new Gastos { Fecha = DateTime.Now }; 
             Volver();
         }
         catch (Exception ex)
@@ -85,6 +85,6 @@
 
     public void Nuevo()
     {
-        gasto = new Gastos { Fecha = DateTime.Now };  // Limpiar el formulario para un nuevo gasto
+        gasto = new Gastos { Fecha = DateTime.Now }; 
     }
 }
