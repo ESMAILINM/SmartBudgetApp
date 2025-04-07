@@ -44,6 +44,13 @@ namespace SmartBudgetApp.Services
             contexto.Ingresos.Update(ingresos);
             return await contexto.SaveChangesAsync() > 0;
         }
+        public async Task<Ingresos?> Buscar(int id)
+        {
+            await using var contexto = await _dbFactory.CreateDbContextAsync();
+            return await contexto.Ingresos
+
+                .FirstOrDefaultAsync(f => f.Id == id);
+        }
         public async Task<bool> Eliminar(int id)
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
