@@ -1,171 +1,260 @@
-﻿@page "/"
+﻿@page "/Home"
 @using System.Globalization
-@rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject FacturasService facturasService
 @inject GastosServices gastosService
 @inject IngresosService ingresoService
 @inject VentasService ventasService
-@inject IJSRuntime JS
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
 
 <PageTitle>Dashboard</PageTitle>
 
-<div class="container mt-4">
-    <h2 class="text-center mb-4">Resumen Financiero</h2>
-
-    
+<div class="container mt-5">
+    <h2 class="text-center text-primary mb-5">Resumen Financiero</h2>
     <div class="row">
-        
-        <div class="col-md-6">
-            <h4>Flujo de Efectivo</h4>
-            <canvas id="barChart"></canvas>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-light">
+                <div class="card-body">
+                    <h4 class="card-title text-center text-info">Flujo de Efectivo</h4>
+                    <canvas id="barChart" width="70" height="70"></canvas>
+                </div>
+            </div>
         </div>
-
-        <div class="col-md-6">
-            <h4>Distribución de Gastos</h4>
-            <canvas id="pieChart"></canvas>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-light">
+                <div class="card-body">
+                    <h4 class="card-title text-center text-danger">Distribución de Gastos</h4>
+                    <canvas id="pieChart" width="70" height="40"></canvas>
+                </div>
+            </div>
         </div>
-    </div>
-
-    
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <h5>Facturas</h5>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Categoría</th>
-                        <th>Monto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var factura in Facturas)
-                    {
-                        <tr>
-                            <td>@factura.Fecha.ToString("dd/MM/yyyy")</td>
-                            <td>@factura.Categoria</td>
-                            <td>@factura.Total.ToString("C", CultureInfo.CurrentCulture)</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <div class="col-md-6">
-            <h5>Ingresos y Gastos</h5>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Tipo</th>
-                        <th>Monto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Ingresos</td>
-                        <td>@ingresos.Sum(i => i.Monto).ToString("C", CultureInfo.CurrentCulture)</td>
-                    </tr>
-                    <tr>
-                        <td>Gastos</td>
-                        <td>@gastos.Sum(g => g.Monto).ToString("C", CultureInfo.CurrentCulture)</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-light">
+                <div class="card-body">
+                    <h4 class="card-title text-center text-success">Evolución de Ventas</h4>
+                    <canvas id="lineChart" width="300" height="300"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="row mt-4">
-        <div class="col-md-6">
-            <h5>Ventas</h5>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Departamento</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var venta in Ventas)
-                    {
-                        <tr>
-                            <td>@venta.Fecha.ToString("dd/MM/yyyy")</td>
-                            <td>@venta.DepartamentoId</td>
-                            <td>@venta.Total.ToString("C", CultureInfo.CurrentCulture)</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-light">
+                <div class="card-header text-center bg-primary text-white">
+                    <h5 class="mb-0">Facturas</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Categoría</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Facturas != null && Facturas.Any())
+                            {
+                                @foreach (var factura in Facturas)
+                                {
+                                    <tr>
+                                        <td>@factura.Fecha.ToString("dd/MM/yyyy")</td>
+                                        <td>@factura.Categoria.Nombre</td>
+                                        <td>@factura.Total.ToString("C", CultureInfo.CurrentCulture)</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="3">Cargando facturas...</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-light">
+                <div class="card-header text-center bg-warning text-dark">
+                    <h5 class="mb-0">Ingresos y Gastos</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ingresos != null && gastos != null)
+                            {
+                                <tr>
+                                    <td>Ingresos</td>
+                                    <td>@ingresos.Sum(i => i.Monto).ToString("C", CultureInfo.CurrentCulture)</td>
+                                </tr>
+                                <tr>
+                                    <td>Gastos</td>
+                                    <td>@gastos.Sum(g => g.Monto).ToString("C", CultureInfo.CurrentCulture)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr><td colspan="2">Cargando ingresos y gastos...</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-light">
+                <div class="card-header text-center bg-secondary text-white">
+                    <h5 class="mb-0">Ventas</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Departamento</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Ventas != null && Ventas.Any())
+                            {
+                                @foreach (var venta in Ventas)
+                                {
+                                    <tr>
+                                        <td>@venta.Fecha.ToString("dd/MM/yyyy")</td>
+                                        <td>@venta.Departamento.Nombre</td>
+                                        <td>@venta.Total.ToString("C", CultureInfo.CurrentCulture)</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="3">Cargando ventas...</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 @code {
-    private List<Facturas> Facturas = new List<Facturas>();
-    private List<Ventas> Ventas = new List<Ventas>();
-    private List<Ingresos> ingresos = new List<Ingresos>();
-    private List<Gastos> gastos = new List<Gastos>();
-    private Ingresos ingreso = new Ingresos();
-    private Gastos gasto = new Gastos();
-
-    private bool chartsRendered = false; 
+    private List<Facturas> Facturas = new();
+    private List<Ventas> Ventas = new();
+    private List<Ingresos> ingresos = new();
+    private List<Gastos> gastos = new();
 
     protected override async Task OnInitializedAsync()
     {
-        
-        Facturas = await facturasService.Listar(a => true);
-        Ventas = await ventasService.Listar(a => true);
-        ingresos = await ingresoService.Listar(a => true);
-        gastos = await gastosService.Listar(a => true);
-
-   
-
-        
-
+        try
+        {
+            Facturas = await facturasService.Listar(a => true);
+            Ventas = await ventasService.Listar(a => true);
+            ingresos = await ingresoService.Listar(a => true);
+            gastos = await gastosService.Listar(a => true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
     }
 
-   
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !chartsRendered)
+        if (firstRender)
         {
-            await RenderCharts(); 
-            chartsRendered = true;
+            await RenderCharts();
         }
     }
 
     private async Task RenderCharts()
     {
-       
-        var barChartData = new
+        try
         {
-            labels = Facturas.Select(f => f.Fecha.ToString("dd/MM/yyyy")).ToArray(),
-            datasets = new[] {
-                new {
-                    label = "Flujo de Efectivo",
-                    data = Facturas.Select(f => f.Total).ToArray(),
-                    backgroundColor = "rgba(75, 192, 192, 0.2)",
-                    borderColor = "rgba(75, 192, 192, 1)",
-                    borderWidth = 1
+            var barChartData = new
+            {
+                labels = Facturas.Select(f => f.Fecha.ToString("dd/MM/yyyy")).ToArray(),
+                datasets = new[] { new
+                    {
+                        label = "Flujo de Efectivo",
+                        data = Facturas.Select(f => (double)f.Total).ToArray(),
+                        backgroundColor = "rgba(75, 192, 192, 0.2)",
+                        borderColor = "rgba(75, 192, 192, 1)",
+                        borderWidth = 1
+                    }
                 }
-            }
-        };
+            };
 
-        
-        var pieChartData = new
+            var options = new
+            {
+                responsive = true,
+                scales = new
+                {
+                    yAxes = new[] { new { ticks = new { beginAtZero = true } } }
+                }
+            };
+
+            await JSRuntime.InvokeVoidAsync("renderBarChart", "barChart", barChartData, options);
+
+            var pieChartData = new
+            {
+                labels = gastos.Select(g => g.Descripcion).ToArray(),
+                datasets = new[] { new
+                    {
+                        data = gastos.Select(g => (double)g.Monto).ToArray(),
+                        backgroundColor = new[] {
+                            "rgba(255, 99, 132, 0.8)",
+                            "rgba(54, 162, 235, 0.8)",
+                            "rgba(255, 206, 86, 0.8)",
+                            "rgba(75, 192, 192, 0.8)",
+                            "rgba(153, 102, 255, 0.8)"
+                        },
+                        borderColor = new[] {
+                            "rgba(255, 99, 132, 1)",
+                            "rgba(54, 162, 235, 1)",
+                            "rgba(255, 206, 86, 1)",
+                            "rgba(75, 192, 192, 1)",
+                            "rgba(153, 102, 255, 1)"
+                        },
+                        borderWidth = 1
+                    }
+                }
+            };
+
+            await JSRuntime.InvokeVoidAsync("renderPieChart", "pieChart", pieChartData);
+
+            var lineChartData = new
+            {
+                labels = Ventas.Select(v => v.Fecha.ToString("MMMM yyyy")).ToArray(),
+                datasets = new[] { new
+                    {
+                        label = "Ventas",
+                        data = Ventas.Select(v => (double)v.Total).ToArray(),
+                        borderColor = "rgba(54, 162, 235, 1)",
+                        fill = false,
+                        tension = 0.1
+                    }
+                }
+            };
+
+            await JSRuntime.InvokeVoidAsync("renderLineChart", "lineChart", lineChartData);
+        }
+        catch (Exception ex)
         {
-            labels = gastos.Select(g => g.Descripcion).ToArray(),
-            datasets = new[] {
-                new {
-                    data = gastos.Select(g => g.Monto).ToArray(),
-                    backgroundColor = new[] { "rgba(255, 99, 132, 0.2)", "rgba(54, 162, 235, 0.2)" }
-                }
-            }
-        };
-
-        
-        await JS.InvokeVoidAsync("renderBarChart", "barChart", barChartData);
-        await JS.InvokeVoidAsync("renderPieChart", "pieChart", pieChartData);
+            Console.WriteLine($"Error rendering charts: {ex.Message}");
+        }
     }
 }

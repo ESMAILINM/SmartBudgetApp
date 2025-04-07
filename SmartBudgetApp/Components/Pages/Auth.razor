@@ -2,7 +2,7 @@
 
 @using Microsoft.AspNetCore.Authorization
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin") ]
 
 <PageTitle>Auth</PageTitle>
 
@@ -10,4 +10,10 @@
 
 <AuthorizeView>
     Hello @context.User.Identity?.Name!
+</AuthorizeView>
+
+@* Etiqueta para autorizaciones de roles. *@
+<AuthorizeView Roles="Admin">
+    Hello @context.User.Identity?.Name!
+    <input type="button" value="Solo para Admin" />
 </AuthorizeView>
