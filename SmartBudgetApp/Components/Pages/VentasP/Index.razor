@@ -5,7 +5,7 @@
 @rendermode InteractiveServer
 
 <div class="container card shadow-lg">
-    <div class="card-header text-center bg-primary text-white">
+    <div class="card-header text-center ">
         <h3><strong>Inventario de Ventas</strong></h3>
     </div>
 
@@ -20,14 +20,16 @@
             <label for="fechaFin" class="form-label fw-bold">Hasta:</label>
             <InputDate id="fechaFin" class="form-control" @bind-Value="fechaFin" />
         </div>
+
         <div class="col-md-4 text-md-end">
             <button @onclick="Buscar" class="btn btn-success">
-                <i class="bi bi-search"></i> Filtrar
+                <i class="bi bi-search"></i> Buscar
             </button>
-            <a href="/Ventas/Create" class="btn btn-outline-primary">
-                <i class="bi bi-plus-circle"></i> Nueva Venta
+            <a href="/Ventas/Create" class="btn btn-outline-success">
+                <i class="bi bi-plus-circle"></i> 
             </a>
         </div>
+
         <div class="col-md-4">
             <label for="departamentoFiltro" class="form-label fw-bold">Departamento:</label>
             <InputSelect id="departamentoFiltro" class="form-control" @bind-Value="departamentoSeleccionadoId">
@@ -61,12 +63,12 @@
                             <td>$@venta.Total.ToString("N2")</td>
                             <td>@venta.Departamento.Nombre</td>
                             <td>
-                                <button type="button" class="btn btn-danger" @onclick="() => MostrarModal(venta.VentaId)">
+                                <button type="button" class="btn btn-outline-danger" @onclick="() => MostrarModal(venta.VentaId)">
                                     <i class="bi bi-trash3"></i>
                                 </button>
                             </td>
                             <td>
-                                <a href="/Ventas/Edit/@venta.VentaId" class="btn btn-warning text-white">
+                                <a href="/Ventas/Edit/@venta.VentaId" class="btn btn-outline-primary">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
                             </td>
@@ -82,75 +84,47 @@
     </div>
 </div>
 
-@if (mostrarModal)
-{
-    <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmación</h5>
-                </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar esta venta?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" @onclick="EliminarVenta">Eliminar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade show" @onclick="CerrarModal"></div>
-}
-
 @code {
-    public List<Ventas> ventas { get; set; } = new List<Ventas>();
-    public List<Departamento> departamentos { get; set; } = new List<Departamento>();
-    public int departamentoSeleccionadoId { get; set; } = 0;
-    public DateTime fechaInicio { get; set; } = DateTime.Now.AddDays(-7);
+    public List<Ventas> ventas { get; set; } = new();
+    public List<Departamento> departamentos { get; set; } = new();
+    public DateTime fechaInicio { get; set; } = DateTime.Now.AddMonths(-1);
     public DateTime fechaFin { get; set; } = DateTime.Now;
-    public int ventaAEliminarId { get; set; }
-    public bool mostrarModal { get; set; } = false;
+    public int departamentoSeleccionadoId { get; set; }
+    public bool mostrarModal { get; set; }
+    public Ventas venta { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        departamentos = await departamentoService.ListarDepartamento(a => true);
-        await CargarVentas();
-    }
-
-    public async Task CargarVentas()
-    {
-        ventas = await ventasService.Listar(v => v.Fecha >= fechaInicio && v.Fecha <= fechaFin);
+        departamentos = await departamentoService.ListarDepartamento(d => true);
+        await Buscar();
     }
 
     public async Task Buscar()
     {
-        if (departamentoSeleccionadoId != 0)
-        {
-            ventas = await ventasService.Listar(v => v.DepartamentoId == departamentoSeleccionadoId && v.Fecha >= fechaInicio && v.Fecha <= fechaFin);
-        }
-        else
-        {
-            await CargarVentas();
-        }
+        ventas = await ventasService.Listar(v =>
+            v.Fecha >= fechaInicio && v.Fecha <= fechaFin &&
+            (departamentoSeleccionadoId == 0 || v.DepartamentoId == departamentoSeleccionadoId));
     }
 
     private void MostrarModal(int ventaId)
     {
-        ventaAEliminarId = ventaId;
+        venta = ventas.FirstOrDefault(v => v.VentaId == ventaId);
         mostrarModal = true;
     }
 
     private void CerrarModal()
     {
         mostrarModal = false;
-        ventaAEliminarId = 0;
+        venta = null;
     }
 
     private async Task EliminarVenta()
     {
-        await ventasService.Eliminar(ventaAEliminarId);
-        await CargarVentas();
-        CerrarModal();
+        if (venta != null)
+        {
+            await ventasService.Eliminar(venta.VentaId);
+            await Buscar(); // Recargar después de eliminar
+            CerrarModal();
+        }
     }
 }
