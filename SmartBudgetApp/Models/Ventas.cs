@@ -13,8 +13,8 @@ namespace SmartBudgetApp.Models
         public int DepartamentoId { get; set; }
         public Departamento? Departamento { get; set; }
 
-        [Required(ErrorMessage = "El total es obligatorio.")]
-        [Range(0, double.MaxValue, ErrorMessage = "El total debe ser un valor positivo.")]
+        [Required(ErrorMessage = "Total es obligatorio")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "El total debe ser mayor a cero")]
         public decimal Total { get; set; }
 
         public DateTime Fecha { get; set; }
