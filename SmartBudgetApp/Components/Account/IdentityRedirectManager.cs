@@ -1,10 +1,14 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 
 namespace SmartBudgetApp.Components.Account
 {
-    internal sealed class IdentityRedirectManager(NavigationManager navigationManager)
+    internal sealed class IdentityRedirectManager
     {
+        private readonly NavigationManager navigationManager;
+        private readonly ILogger<IdentityRedirectManager> logger;
+
         public const string StatusCookieName = "Identity.StatusMessage";
 
         private static readonly CookieBuilder StatusCookieBuilder = new()
@@ -14,6 +18,12 @@ namespace SmartBudgetApp.Components.Account
             IsEssential = true,
             MaxAge = TimeSpan.FromSeconds(5),
         };
+
+        public IdentityRedirectManager(NavigationManager navigationManager, ILogger<IdentityRedirectManager> logger)
+        {
+            this.navigationManager = navigationManager;
+            this.logger = logger;
+        }
 
         [DoesNotReturn]
         public void RedirectTo(string? uri)
@@ -25,6 +35,9 @@ namespace SmartBudgetApp.Components.Account
             {
                 uri = navigationManager.ToBaseRelativePath(uri);
             }
+
+            // Log the value of uri before calling NavigateTo
+            logger.LogInformation("Redirecting to URI: {Uri}", uri);
 
             // During static rendering, NavigateTo throws a NavigationException which is handled by the framework as a redirect.
             // So as long as this is called from a statically rendered Identity component, the InvalidOperationException is never thrown.
