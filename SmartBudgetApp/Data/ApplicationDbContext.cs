@@ -31,7 +31,8 @@ namespace SmartBudgetApp.Data
                 new Categorias { CategoriaId = 1, Nombre = "Luz" },
                 new Categorias { CategoriaId = 2, Nombre = "Agua" },
                 new Categorias { CategoriaId = 3, Nombre = "Local" },
-                new Categorias { CategoriaId = 4, Nombre = "Internet" }
+                new Categorias { CategoriaId = 4, Nombre = "Internet" },
+                new Categorias { CategoriaId = 5, Nombre = "Banco" }
             );
         }
     }
