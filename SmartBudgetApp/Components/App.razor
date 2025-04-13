@@ -19,17 +19,10 @@
 <body>
     <Routes />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        window.renderPieChart = (elementId, chartData) => {
-            var ctx = document.getElementById(elementId).getContext('2d');
-            new Chart(ctx, {
-                type: 'pie',
-                data: chartData
-            });
-        };
 
+    <script>
         window.renderBarChart = (elementId, chartData, options) => {
-            var ctx = document.getElementById(elementId).getContext('2d');
+            const ctx = document.getElementById(elementId).getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
                 data: chartData,
@@ -37,18 +30,34 @@
             });
         };
 
-        window.renderLineChart = (chartId, chartData) => {
-            var ctx = document.getElementById(chartId).getContext('2d');
-            var myLineChart = new Chart(ctx, {
+        window.renderPieChart = (elementId, chartData) => {
+            const ctx = document.getElementById(elementId).getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        };
+
+        window.renderLineChart = (elementId, chartData) => {
+            const ctx = document.getElementById(elementId).getContext('2d');
+            new Chart(ctx, {
                 type: 'line',
                 data: chartData,
                 options: {
                     responsive: true,
                     scales: {
-                        x: {
+                        y: {
                             beginAtZero: true
                         },
-                        y: {
+                        x: {
                             beginAtZero: true
                         }
                     }
@@ -56,8 +65,9 @@
             });
         };
     </script>
+
     <script src="_framework/blazor.web.js"></script>
-    <script src="_content/Syncfusion.Blazor/scripts/syncfusion-blazor.min.js"></script>
+   
 
 </body>
 
