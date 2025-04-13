@@ -165,20 +165,18 @@
             Ventas = await ventasService.Listar(a => true);
             ingresos = await ingresoService.Listar(a => true);
             gastos = await gastosService.Listar(a => true);
+
+            await RenderCharts();
+
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading data: {ex.Message}");
         }
+
+
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await RenderCharts();
-        }
-    }
 
     private async Task RenderCharts()
     {
@@ -187,8 +185,8 @@
             var barChartData = new
             {
                 labels = Facturas.Select(f => f.Fecha.ToString("dd/MM/yyyy")).ToArray(),
-                datasets = new[] { new
-                    {
+                datasets = new[] {
+                    new {
                         label = "Flujo de Efectivo",
                         data = Facturas.Select(f => (double)f.Total).ToArray(),
                         backgroundColor = "rgba(75, 192, 192, 0.2)",
@@ -203,7 +201,14 @@
                 responsive = true,
                 scales = new
                 {
-                    yAxes = new[] { new { ticks = new { beginAtZero = true } } }
+                    y = new
+                    {
+                        beginAtZero = true
+                    },
+                    x = new
+                    {
+                        beginAtZero = true
+                    }
                 }
             };
 
@@ -212,8 +217,8 @@
             var pieChartData = new
             {
                 labels = gastos.Select(g => g.Descripcion).ToArray(),
-                datasets = new[] { new
-                    {
+                datasets = new[] {
+                    new {
                         data = gastos.Select(g => (double)g.Monto).ToArray(),
                         backgroundColor = new[] {
                             "rgba(255, 99, 132, 0.8)",
@@ -239,8 +244,8 @@
             var lineChartData = new
             {
                 labels = Ventas.Select(v => v.Fecha.ToString("MMMM yyyy")).ToArray(),
-                datasets = new[] { new
-                    {
+                datasets = new[] {
+                    new {
                         label = "Ventas",
                         data = Ventas.Select(v => (double)v.Total).ToArray(),
                         borderColor = "rgba(54, 162, 235, 1)",
@@ -258,3 +263,4 @@
         }
     }
 }
+
